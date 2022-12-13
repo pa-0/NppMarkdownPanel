@@ -143,7 +143,6 @@ namespace NppMarkdownPanel.Forms
 
         public void RenderMarkdown(string currentText, string filepath, bool preserveVerticalScrollPosition = true)
         {
-            CurrentFilePath = filepath;
             if (renderTask == null || renderTask.IsCompleted)
             {
                 if (preserveVerticalScrollPosition)
@@ -180,7 +179,6 @@ namespace NppMarkdownPanel.Forms
 
         public void RenderHtml(string currentText, string filepath, bool preserveVerticalScrollPosition = true)
         {
-            CurrentFilePath = filepath;
             if (renderTask == null || renderTask.IsCompleted)
             {
                 if (preserveVerticalScrollPosition)
