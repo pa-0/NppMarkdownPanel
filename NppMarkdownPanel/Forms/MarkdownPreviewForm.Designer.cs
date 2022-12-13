@@ -64,7 +64,6 @@
             // 
             // toolStripContainer1.ContentPanel
             // 
-            // this.toolStripContainer1.ContentPanel.Controls.Add(this.statusStrip2);
             this.toolStripContainer1.ContentPanel.Controls.Add(this.pictureBoxScreenshot);
             this.toolStripContainer1.ContentPanel.Controls.Add(this.webBrowserPreview);
             this.toolStripContainer1.ContentPanel.Size = new System.Drawing.Size(811, 573);

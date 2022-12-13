@@ -74,9 +74,11 @@ namespace NppMarkdownPanel.Forms
             }
         }
 
-        public bool ShowToolbar {
+        public bool ShowToolbar
+        {
             get => showToolbar;
-            set {
+            set
+            {
                 showToolbar = value;
                 tbPreview.Visible = value;
             }
