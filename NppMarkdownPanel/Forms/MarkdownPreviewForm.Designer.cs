@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace NppMarkdownPanel.Forms
+﻿namespace NppMarkdownPanel.Forms
 {
     partial class MarkdownPreviewForm
     {
@@ -105,7 +103,7 @@ namespace NppMarkdownPanel.Forms
             this.webBrowserPreview.TabIndex = 0;
             this.webBrowserPreview.DocumentCompleted += new System.Windows.Forms.WebBrowserDocumentCompletedEventHandler(this.webBrowserPreview_DocumentCompleted);
             this.webBrowserPreview.Navigating += new System.Windows.Forms.WebBrowserNavigatingEventHandler(this.webBrowserPreview_Navigating);
-            this.webBrowserPreview.StatusTextChanged += new EventHandler(this.webBrowserPreview_StatusTextChanged);
+            this.webBrowserPreview.StatusTextChanged += new System.EventHandler(this.webBrowserPreview_StatusTextChanged);
             // 
             // tbPreview
             // 
