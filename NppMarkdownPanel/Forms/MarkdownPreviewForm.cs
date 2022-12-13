@@ -35,7 +35,7 @@ namespace NppMarkdownPanel.Forms
             </html>
             ";
 
-        private Task<string> renderTask;
+        private Task<RenderResult> renderTask;
         private readonly Action toolWindowCloseAction;
         private int lastVerticalScroll = 0;
         private string htmlContentForExport;
@@ -84,12 +84,40 @@ namespace NppMarkdownPanel.Forms
         }
 
         private IMarkdownGenerator markdownGenerator;
-        
+
         public MarkdownPreviewForm(Action toolWindowCloseAction)
         {
             this.toolWindowCloseAction = toolWindowCloseAction;
             InitializeComponent();
             markdownGenerator = MarkdownPanelController.GetMarkdownGeneratorImpl();
+        }
+
+        private RenderResult RenderHtmlInternal(string currentText, string filepath)
+        {
+            var defaultBodyStyle = "";
+            var markdownStyleContent = GetCssContent(filepath);
+
+            // if (!isValidFileExtension(CurrentFilePath))
+            // {
+                // var invalidExtensionMessage = string.Format(MSG_NO_SUPPORTED_FILE_EXT, Path.GetFileName(filepath), SupportedFileExt);
+                // invalidExtensionMessage = string.Format(DEFAULT_HTML_BASE, Path.GetFileName(filepath), markdownStyleContent, defaultBodyStyle, invalidExtensionMessage);
+
+                // return new RenderResult(invalidExtensionMessage, invalidExtensionMessage);
+            // }
+
+            var resultForBrowser = markdownGenerator.ConvertToHtml(currentText, filepath);
+            var resultForExport = markdownGenerator.ConvertToHtml(currentText, null);
+
+            var markdownHtmlBrowser = string.Format(DEFAULT_HTML_BASE, Path.GetFileName(filepath), markdownStyleContent, defaultBodyStyle, resultForBrowser);
+            var markdownHtmlFileExport = string.Format(DEFAULT_HTML_BASE, Path.GetFileName(filepath), markdownStyleContent, defaultBodyStyle, resultForExport);
+            return new RenderResult(markdownHtmlBrowser, markdownHtmlFileExport);
+        }
+
+        private RenderResult RenderHtmlOnlyInternal(string currentText, string filepath)
+        {
+            var resultForBrowser = currentText;
+            var resultForExport = currentText;
+            return new RenderResult(resultForBrowser, resultForExport);
         }
 
         private string GetCssContent(string filepath)
@@ -126,21 +154,15 @@ namespace NppMarkdownPanel.Forms
                 {
                     lastVerticalScroll = 0;
                 }
+
                 MakeAndDisplayScreenShot();
 
                 var context = TaskScheduler.FromCurrentSynchronizationContext();
-                renderTask = new Task<string>(() =>
-                {
-                    var result = markdownGenerator.ConvertToHtml(currentText, filepath);
-                    var defaultBodyStyle = "";
-                    var markdownStyleContent = GetCssContent(filepath);
-
-                    var markdownHtml = string.Format(DEFAULT_HTML_BASE, Path.GetFileName(filepath), markdownStyleContent, defaultBodyStyle, result);
-                    return markdownHtml;
-                });
+                renderTask = new Task<RenderResult>(() => RenderHtmlInternal(currentText, filepath));
                 renderTask.ContinueWith((renderedText) =>
                 {
-                    htmlContentForExport = renderedText.Result;
+                    webBrowserPreview.DocumentText = renderedText.Result.ResultForBrowser;
+                    htmlContentForExport = renderedText.Result.ResultForExport;
                     if (!String.IsNullOrWhiteSpace(HtmlFileName))
                     {
                         bool valid = Utils.ValidateFileSelection(HtmlFileName, out string fullPath, out string error, "HTML Output");
@@ -150,8 +172,6 @@ namespace NppMarkdownPanel.Forms
                             writeHtmlContentToFile(HtmlFileName);
                         }
                     }
-
-                    webBrowserPreview.DocumentText = htmlContentForExport;
                     AdjustZoomLevel();
                 }, context);
                 renderTask.Start();
@@ -174,31 +194,20 @@ namespace NppMarkdownPanel.Forms
                 MakeAndDisplayScreenShot();
 
                 var context = TaskScheduler.FromCurrentSynchronizationContext();
-                renderTask = new Task<string>(() =>
-                {
-                    return currentText;
-                });
+                renderTask = new Task<RenderResult>(() => RenderHtmlOnlyInternal(currentText, filepath));
                 renderTask.ContinueWith((renderedText) =>
                 {
-                    htmlContentForExport = renderedText.Result;
+                    webBrowserPreview.DocumentText = renderedText.Result.ResultForBrowser;
+                    htmlContentForExport = renderedText.Result.ResultForExport;
                     if (!String.IsNullOrWhiteSpace(HtmlFileName))
                     {
                         bool valid = Utils.ValidateFileSelection(HtmlFileName, out string fullPath, out string error, "HTML Output");
                         if (valid)
                         {
                             HtmlFileName = fullPath; // the validation was run against this path, so we want to make sure the state of the preview matches that
-                            try
-                            {
-                                File.WriteAllText(HtmlFileName, htmlContentForExport);
-                            }
-                            catch (Exception)
-                            {
-                                // If it fails, just continue
-                            }
+                            writeHtmlContentToFile(HtmlFileName);
                         }
                     }
-
-                    webBrowserPreview.DocumentText = htmlContentForExport;
                     AdjustZoomLevel();
                 }, context);
                 renderTask.Start();
@@ -244,6 +253,7 @@ namespace NppMarkdownPanel.Forms
             webBrowserPreview.Document.Window.ScrollTo(0, lastVerticalScroll);
             Application.DoEvents();
         }
+
 
         private void HideScreenshotAndShowBrowser()
         {
