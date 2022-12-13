@@ -8,33 +8,42 @@ using Markdig;
 using Markdig.Renderers;
 using Markdig.Renderers.Html;
 using Markdig.Syntax;
+using Markdig.SyntaxHighlighting;
 
-namespace NppMarkdownPanel
+namespace MarkdigWrapper
 {
-
-    public class MarkdigMarkdownGenerator : IMarkdownGenerator
+    public class MarkdigMarkdownGenerator
     {
-        private readonly HtmlRenderer htmlRenderer;
-        private readonly StringWriter htmlWriter;
-        private readonly StringBuilder sb;
 
         public MarkdigMarkdownGenerator()
         {
-            sb = new StringBuilder();
-            htmlWriter = new StringWriter(sb);
-            htmlRenderer = new HtmlRenderer(htmlWriter);
         }
 
         public string ConvertToHtml(string markDownText, string filepath)
         {
-            var pipeline = new MarkdownPipelineBuilder().UseAdvancedExtensions().UsePreciseSourceLocation().Build();
-            // pipeline.UsePreciseSourceLocation();
+            var sb = new StringBuilder();
+            var htmlWriter = new StringWriter(sb);
+            var htmlRenderer = new HtmlRenderer(htmlWriter);
+
+            var pipeline = new MarkdownPipelineBuilder()
+                .UseAdvancedExtensions()
+                .UseSyntaxHighlighting()
+                .UsePreciseSourceLocation()
+                .Build();
             try
             {
-                htmlRenderer.BaseUrl = new Uri(filepath);
+                if (filepath != null)
+                {
+                    htmlRenderer.BaseUrl = new Uri(filepath);
+                }
+                else
+                {
+                    htmlRenderer.BaseUrl = null;
+                }
             }
-            catch
+            catch (Exception e)
             {
+                if (e != null) { }
             }
             sb.Clear();
 
@@ -62,7 +71,7 @@ namespace NppMarkdownPanel
                 attributes.Id = childBlock.Line.ToString();
                 childBlock.SetAttributes(attributes);
             }
-           
+
         }
     }
 }

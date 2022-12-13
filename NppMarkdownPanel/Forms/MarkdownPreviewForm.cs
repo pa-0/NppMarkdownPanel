@@ -23,9 +23,9 @@ namespace NppMarkdownPanel.Forms
          @"<!DOCTYPE html>
             <html>
                 <head>
+                    <meta http-equiv=""X-UA-Compatible"" content=""IE=edge""/>
+                    <meta http-equiv=""content-type"" content=""text/html; charset=utf-8""/>
                     <title>{0}</title>
-	                <meta http-equiv=""X-UA-Compatible"" content=""IE=edge""/>
-	                <meta http-equiv=""content-type"" content=""text/html; charset=utf-8""/>
                     <style type=""text/css"">
                     {1}
                     </style>
@@ -39,13 +39,41 @@ namespace NppMarkdownPanel.Forms
         private Task<string> renderTask;
         private readonly Action toolWindowCloseAction;
         private int lastVerticalScroll = 0;
-        private string htmlContent;
+        private string htmlContentForExport;
         private bool showToolbar;
-        private string currentFilePath;
 
         public string CssFileName { get; set; }
+
+        public string CssDarkModeFileName { get; set; }
+
         public int ZoomLevel { get; set; }
         public string HtmlFileName { get; set; }
+
+        public string CurrentFilePath { get; set; }
+
+        public string MkdnExtensions { get; set; }
+        public string HtmlExtensions { get; set; }
+
+        private bool isDarkModeEnabled;
+        public bool IsDarkModeEnabled
+        {
+            get { return isDarkModeEnabled; }
+            set
+            {
+                isDarkModeEnabled = value;
+                if (isDarkModeEnabled)
+                {
+                    tbPreview.BackColor = Color.Black;
+                    btnSaveHtml.ForeColor = Color.White;
+                }
+                else
+                {
+                    tbPreview.BackColor = SystemColors.Control;
+                    btnSaveHtml.ForeColor = SystemColors.ControlText;
+                }
+            }
+        }
+
         public bool ShowToolbar {
             get => showToolbar;
             set {
@@ -63,12 +91,40 @@ namespace NppMarkdownPanel.Forms
             markdownGenerator = MarkdownPanelController.GetMarkdownGeneratorImpl();
         }
 
-        public void RenderMarkdown(string currentText, string filepath)
+        private string GetCssContent(string filepath)
         {
-            currentFilePath = filepath;
+            // Path of plugin directory
+            var cssContent = "";
+
+            var assemblyPath = Path.GetDirectoryName(Assembly.GetAssembly(GetType()).Location);
+
+            var defaultCss = IsDarkModeEnabled ? MainResources.DefaultDarkModeCssFile : MainResources.DefaultCssFile;
+            var customCssFile = IsDarkModeEnabled ? CssDarkModeFileName : CssFileName;
+            if (File.Exists(customCssFile))
+            {
+                cssContent = File.ReadAllText(customCssFile);
+            }
+            else
+            {
+                cssContent = File.ReadAllText(assemblyPath + "\\" + defaultCss);
+            }
+
+            return cssContent;
+        }
+
+        public void RenderMarkdown(string currentText, string filepath, bool preserveVerticalScrollPosition = true)
+        {
+            CurrentFilePath = filepath;
             if (renderTask == null || renderTask.IsCompleted)
             {
-                SaveLastVerticalScrollPosition();
+                if (preserveVerticalScrollPosition)
+                {
+                    SaveLastVerticalScrollPosition();
+                }
+                else
+                {
+                    lastVerticalScroll = 0;
+                }
                 MakeAndDisplayScreenShot();
 
                 var context = TaskScheduler.FromCurrentSynchronizationContext();
@@ -76,56 +132,44 @@ namespace NppMarkdownPanel.Forms
                 {
                     var result = markdownGenerator.ConvertToHtml(currentText, filepath);
                     var defaultBodyStyle = "";
-
-                    // Path of plugin directory
-                    var markdownStyleContent = "";
-
-                    var assemblyPath = Path.GetDirectoryName(Assembly.GetAssembly(GetType()).Location);
-
-                    if (File.Exists(CssFileName))
-                    {
-                        markdownStyleContent = File.ReadAllText(CssFileName);
-                    }
-                    else
-                    {
-                        markdownStyleContent = File.ReadAllText(assemblyPath + "\\" + MainResources.DefaultCssFile);
-                    }
+                    var markdownStyleContent = GetCssContent(filepath);
 
                     var markdownHtml = string.Format(DEFAULT_HTML_BASE, Path.GetFileName(filepath), markdownStyleContent, defaultBodyStyle, result);
                     return markdownHtml;
                 });
                 renderTask.ContinueWith((renderedText) =>
                 {
-                    htmlContent = renderedText.Result;
+                    htmlContentForExport = renderedText.Result;
                     if (!String.IsNullOrWhiteSpace(HtmlFileName))
                     {
                         bool valid = Utils.ValidateFileSelection(HtmlFileName, out string fullPath, out string error, "HTML Output");
                         if (valid)
                         {
                             HtmlFileName = fullPath; // the validation was run against this path, so we want to make sure the state of the preview matches that
-                            try
-                            {
-                                File.WriteAllText(HtmlFileName, htmlContent);
-                            }
-                            catch (Exception)
-                            {
-                                // If it fails, just continue
-                            }
+                            writeHtmlContentToFile(HtmlFileName);
                         }
                     }
 
-                    webBrowserPreview.DocumentText = htmlContent;
+                    webBrowserPreview.DocumentText = htmlContentForExport;
                     AdjustZoomLevel();
                 }, context);
                 renderTask.Start();
             }
         }
 
-        public void RenderHtml(string currentText, string filepath)
+        public void RenderHtml(string currentText, string filepath, bool preserveVerticalScrollPosition = true)
         {
+            CurrentFilePath = filepath;
             if (renderTask == null || renderTask.IsCompleted)
             {
-                SaveLastVerticalScrollPosition();
+                if (preserveVerticalScrollPosition)
+                {
+                    SaveLastVerticalScrollPosition();
+                }
+                else
+                {
+                    lastVerticalScroll = 0;
+                }
                 MakeAndDisplayScreenShot();
 
                 var context = TaskScheduler.FromCurrentSynchronizationContext();
@@ -135,7 +179,7 @@ namespace NppMarkdownPanel.Forms
                 });
                 renderTask.ContinueWith((renderedText) =>
                 {
-                    htmlContent = renderedText.Result;
+                    htmlContentForExport = renderedText.Result;
                     if (!String.IsNullOrWhiteSpace(HtmlFileName))
                     {
                         bool valid = Utils.ValidateFileSelection(HtmlFileName, out string fullPath, out string error, "HTML Output");
@@ -144,7 +188,7 @@ namespace NppMarkdownPanel.Forms
                             HtmlFileName = fullPath; // the validation was run against this path, so we want to make sure the state of the preview matches that
                             try
                             {
-                                File.WriteAllText(HtmlFileName, htmlContent);
+                                File.WriteAllText(HtmlFileName, htmlContentForExport);
                             }
                             catch (Exception)
                             {
@@ -153,7 +197,7 @@ namespace NppMarkdownPanel.Forms
                         }
                     }
 
-                    webBrowserPreview.DocumentText = htmlContent;
+                    webBrowserPreview.DocumentText = htmlContentForExport;
                     AdjustZoomLevel();
                 }, context);
                 renderTask.Start();
@@ -236,28 +280,6 @@ namespace NppMarkdownPanel.Forms
                 if (child != null)
                     webBrowserPreview.Document.Window.ScrollTo(0, CalculateAbsoluteYOffset(child) - 20);
             }
-
-
-            //if (elementIndexesForAllLevels != null && elementIndexesForAllLevels.Count > 0 && webBrowserPreview.Document != null && webBrowserPreview.Document.Body != null /*&& webBrowserPreview.Document.Body.Children.Count > elementIndex - 1*/)
-            //{
-            //    HtmlElement currentElement = webBrowserPreview.Document.Body;
-            //    HtmlElement child = null;
-            //    foreach (int elementIndexForCurrentLevel in elementIndexesForAllLevels)
-            //    {
-            //        if (currentElement.Children.Count > elementIndexForCurrentLevel)
-            //        {
-            //            child = currentElement.Children[elementIndexForCurrentLevel];
-            //            currentElement = child;
-            //        }
-            //        else
-            //        {
-            //            break;
-            //        }
-            //    }
-
-            //    if (child != null)
-            //        webBrowserPreview.Document.Window.ScrollTo(0, CalculateAbsoluteYOffset(child) - 20);
-            //}
         }
 
         private int CalculateAbsoluteYOffset(HtmlElement currentElement)
@@ -318,12 +340,27 @@ namespace NppMarkdownPanel.Forms
 
         private void webBrowserPreview_Navigating(object sender, WebBrowserNavigatingEventArgs e)
         {
-            if (e.Url.ToString() != "about:blank")
+            if (!e.Url.ToString().StartsWith("about:blank"))
             {
                 e.Cancel = true;
                 var p = new Process();
                 p.StartInfo = new ProcessStartInfo(e.Url.ToString());
                 p.Start();
+            }
+            else
+            {
+                // Jump to correct anchor on the page
+                if (e.Url.ToString().Contains("#"))
+                {
+                    var urlParts = e.Url.ToString().Split('#');
+                    e.Cancel = true;
+                    var element = webBrowserPreview.Document.GetElementById(urlParts[1]);
+                    if (element != null)
+                    {
+                        element.Focus();
+                        element.ScrollIntoView(true);
+                    }
+                }
             }
         }
 
@@ -332,24 +369,69 @@ namespace NppMarkdownPanel.Forms
             toolStripStatusLabel1.Text = webBrowserPreview.StatusText;
         }
 
-        private async void btnSaveHtml_Click(object sender, EventArgs e)
+        private void btnSaveHtml_Click(object sender, EventArgs e)
         {
             using (SaveFileDialog saveFileDialog = new SaveFileDialog())
             {
-                Stream myStream;
                 saveFileDialog.Filter = "html files (*.html, *.htm)|*.html;*.htm|All files (*.*)|*.*";
                 saveFileDialog.RestoreDirectory = true;
-                saveFileDialog.InitialDirectory = Path.GetDirectoryName(currentFilePath);
-                saveFileDialog.FileName = Path.GetFileNameWithoutExtension(currentFilePath);
+                saveFileDialog.InitialDirectory = Path.GetDirectoryName(CurrentFilePath);
+                saveFileDialog.FileName = Path.GetFileNameWithoutExtension(CurrentFilePath);
                 if (saveFileDialog.ShowDialog() == DialogResult.OK)
                 {
-                    if ((myStream = saveFileDialog.OpenFile()) != null)
-                    {
-                        await myStream.WriteAsync(Encoding.ASCII.GetBytes(htmlContent), 0, htmlContent.Length);
-                        myStream.Close();
-                    }
+                    writeHtmlContentToFile(saveFileDialog.FileName);
                 }
             }
         }
+
+        private void writeHtmlContentToFile(string filename)
+        {
+            if (!string.IsNullOrEmpty(filename))
+            {
+                File.WriteAllText(filename, htmlContentForExport);
+            }
+        }
+
+
+        public bool isValidMkdnExtension()
+        {
+            StringBuilder sbFileExtension = new StringBuilder(Win32.MAX_PATH);
+            Win32.SendMessage(PluginBase.nppData._nppHandle, (uint)NppMsg.NPPM_GETEXTPART, Win32.MAX_PATH, sbFileExtension);
+            var currentExtension = sbFileExtension.ToString().ToLower();
+            if ( String.IsNullOrEmpty(currentExtension) )
+                return false;
+
+            var matchExtensionList = false;
+            try
+            {
+                matchExtensionList = MkdnExtensions.Split(',').Any(ext => ext != null && currentExtension.Equals("." + ext.Trim().ToLower()));
+            }
+            catch (Exception)
+            {
+            }
+
+            return matchExtensionList;
+        }
+
+        public bool isValidHtmlExtension()
+        {
+            StringBuilder sbFileExtension = new StringBuilder(Win32.MAX_PATH);
+            Win32.SendMessage(PluginBase.nppData._nppHandle, (uint)NppMsg.NPPM_GETEXTPART, Win32.MAX_PATH, sbFileExtension);
+            var currentExtension = sbFileExtension.ToString().ToLower();
+            if ( String.IsNullOrEmpty(currentExtension) )
+                return false;
+
+            var matchExtensionList = false;
+            try
+            {
+                matchExtensionList = HtmlExtensions.Split(',').Any(ext => ext != null && currentExtension.Equals("." + ext.Trim().ToLower()));
+            }
+            catch (Exception)
+            {
+            }
+
+            return matchExtensionList;
+        }
+
     }
 }

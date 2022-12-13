@@ -19,7 +19,7 @@ namespace NppMarkdownPanel.Forms {
     // -Klasse über ein Tool wie ResGen oder Visual Studio automatisch generiert.
     // Um einen Member hinzuzufügen oder zu entfernen, bearbeiten Sie die .ResX-Datei und führen dann ResGen
     // mit der /str-Option erneut aus, oder Sie erstellen Ihr VS-Projekt neu.
-    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "15.0.0.0")]
+    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "16.0.0.0")]
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
     internal class MainResources {
@@ -63,19 +63,20 @@ namespace NppMarkdownPanel.Forms {
         /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die NppMarkdownPanel for Notepad++
         ///
-        ///Version 0.5.0
+        ///Version 0.7.0
         ///
-        ///Created by Mohzy 2019
+        ///Created by Mohzy 2019-2022
         ///
         ///Github: https://github.com/mohzy83/NppMarkdownPanel
         ///
-        ///Using Markdig by xoofx - https://github.com/lunet-io/markdig
+        ///Using Markdig 0.30.4 by xoofx - https://github.com/lunet-io/markdig
         ///
-        ///Using NotepadPlusPlusPluginPack.Net by kbilsted - https://github.com/kbilsted/NotepadPlusPlusPluginPack.Net	
+        ///Using NotepadPlusPlusPluginPack.Net 0.95.00 by kbilsted - https://github.com/kbilsted/NotepadPlusPlusPluginPack.Net	
         ///
-        ///Using Markdown style github-markdown-css by sindresorhus - https://github.com/sindresorhus/github-markdown-css
+        ///Using ColorCode (Portable) 1.0.3 by Bashir Souid and  Richard Slater
+        ///https://github.com/RichardSlater/ColorCodePortable
         ///
-        ///Using portions of nea&apos;s MarkdownViewerPlusPlus Plugin code - https://github.com/nea/Markdow [Rest der Zeichenfolge wurde abgeschnitten]&quot;; ähnelt.
+        ///Using Markdig.SyntaxHighlighting 1.1.7  - Syntax Highlighting [Rest der Zeichenfolge wurde abgeschnitten]&quot;; ähnelt.
         /// </summary>
         internal static string AboutDialogText {
             get {
@@ -89,6 +90,15 @@ namespace NppMarkdownPanel.Forms {
         internal static string DefaultCssFile {
             get {
                 return ResourceManager.GetString("DefaultCssFile", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die style-dark.css ähnelt.
+        /// </summary>
+        internal static string DefaultDarkModeCssFile {
+            get {
+                return ResourceManager.GetString("DefaultDarkModeCssFile", resourceCulture);
             }
         }
     }
