@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace NppMarkdownPanel.Forms
+﻿namespace NppMarkdownPanel.Forms
 {
     partial class MarkdownPreviewForm
     {
@@ -66,7 +64,6 @@ namespace NppMarkdownPanel.Forms
             // 
             // toolStripContainer1.ContentPanel
             // 
-            // this.toolStripContainer1.ContentPanel.Controls.Add(this.statusStrip2);
             this.toolStripContainer1.ContentPanel.Controls.Add(this.pictureBoxScreenshot);
             this.toolStripContainer1.ContentPanel.Controls.Add(this.webBrowserPreview);
             this.toolStripContainer1.ContentPanel.Size = new System.Drawing.Size(811, 573);
@@ -105,7 +102,7 @@ namespace NppMarkdownPanel.Forms
             this.webBrowserPreview.TabIndex = 0;
             this.webBrowserPreview.DocumentCompleted += new System.Windows.Forms.WebBrowserDocumentCompletedEventHandler(this.webBrowserPreview_DocumentCompleted);
             this.webBrowserPreview.Navigating += new System.Windows.Forms.WebBrowserNavigatingEventHandler(this.webBrowserPreview_Navigating);
-            this.webBrowserPreview.StatusTextChanged += new EventHandler(this.webBrowserPreview_StatusTextChanged);
+            this.webBrowserPreview.StatusTextChanged += new System.EventHandler(this.webBrowserPreview_StatusTextChanged);
             // 
             // tbPreview
             // 

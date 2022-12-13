@@ -126,18 +126,18 @@ namespace NppMarkdownPanel
                         RenderMarkdownDeferred();
                     }
                 }
-                // NPPN_DARKMODECHANGED (NPPN_FIRST + 27) // To notify plugins that Dark Mode was enabled/disabled                else             
-                else if (notification.Header.Code == (uint)(NppMsg.NPPN_FIRST + 27))
-                {
-                    markdownPreviewForm.IsDarkModeEnabled = IsDarkModeEnabled();
-                    RenderMarkdownDirect();
-                }
                 else if (notification.Header.Code == (uint)NppMsg.NPPN_FILESAVED)
                 {
                     RenderMarkdownDirect();
                 }
             }
 
+            // NPPN_DARKMODECHANGED (NPPN_FIRST + 27) // To notify plugins that Dark Mode was enabled/disabled
+            if (notification.Header.Code == (uint)(NppMsg.NPPN_FIRST + 27))
+            {
+                markdownPreviewForm.IsDarkModeEnabled = IsDarkModeEnabled();
+                if (isPanelVisible) RenderMarkdownDirect();
+            }
             if (notification.Header.Code == (uint)NppMsg.NPPN_READY)
             {
                 nppReady = true;
@@ -257,7 +257,8 @@ namespace NppMarkdownPanel
             PluginBase.SetCommand(3, "Synchronize on &vertical scroll", SyncViewWithScroll, syncViewWithScrollPosition);
             PluginBase.SetCommand(4, "---", null);
             PluginBase.SetCommand(5, "&Settings", EditSettings);
-            PluginBase.SetCommand(6, "&About", ShowAboutDialog, new ShortcutKey(false, false, false, Keys.None));
+            PluginBase.SetCommand(6, "&Help", ShowHelp);
+            PluginBase.SetCommand(7, "&About", ShowAboutDialog);
             idMyDlg = 0;
         }
 
@@ -278,8 +279,19 @@ namespace NppMarkdownPanel
                 markdownPreviewForm.IsDarkModeEnabled = IsDarkModeEnabled();
                 SaveSettings();
                 //Update Preview
-                RenderMarkdownDirect();
+                if (isPanelVisible) RenderMarkdownDirect();
             }
+        }
+
+        private void ShowHelp()
+        {
+            StringBuilder sbPluginPath = new StringBuilder(Win32.MAX_PATH);
+            Win32.SendMessage(PluginBase.nppData._nppHandle, (uint)NppMsg.NPPM_GETPLUGINHOMEPATH, Win32.MAX_PATH, sbPluginPath);
+            var helpFile = Path.Combine(sbPluginPath.ToString(), Main.PluginFilename + "\\README.md");
+            Win32.SendMessage(PluginBase.nppData._nppHandle, (uint)NppMsg.NPPM_DOOPEN, 0, helpFile);
+            if (!isPanelVisible)
+                TogglePanelVisible();
+            RenderMarkdownDirect();
         }
 
         private void SetIniFilePath()
