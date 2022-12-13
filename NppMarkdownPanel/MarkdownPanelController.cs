@@ -126,18 +126,18 @@ namespace NppMarkdownPanel
                         RenderMarkdownDeferred();
                     }
                 }
-                // NPPN_DARKMODECHANGED (NPPN_FIRST + 27) // To notify plugins that Dark Mode was enabled/disabled                else             
-                else if (notification.Header.Code == (uint)(NppMsg.NPPN_FIRST + 27))
-                {
-                    markdownPreviewForm.IsDarkModeEnabled = IsDarkModeEnabled();
-                    RenderMarkdownDirect();
-                }
                 else if (notification.Header.Code == (uint)NppMsg.NPPN_FILESAVED)
                 {
                     RenderMarkdownDirect();
                 }
             }
 
+            // NPPN_DARKMODECHANGED (NPPN_FIRST + 27) // To notify plugins that Dark Mode was enabled/disabled
+            if (notification.Header.Code == (uint)(NppMsg.NPPN_FIRST + 27))
+            {
+                markdownPreviewForm.IsDarkModeEnabled = IsDarkModeEnabled();
+                if (isPanelVisible) RenderMarkdownDirect();
+            }
             if (notification.Header.Code == (uint)NppMsg.NPPN_READY)
             {
                 nppReady = true;
