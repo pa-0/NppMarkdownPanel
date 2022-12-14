@@ -35,6 +35,8 @@ namespace NppMarkdownPanel.Forms
             </html>
             ";
 
+        const string MSG_NO_SUPPORTED_FILE_EXT = "<h3>The current file <u>{0}</u> has no valid Markdown file extension.</h3><div><b>Valid file extensions:</b> {1}</div><div><b>Valid HTML file extensions:</b> {2}</div>";
+
         private Task<RenderResult> renderTask;
         private readonly Action toolWindowCloseAction;
         private int lastVerticalScroll = 0;
@@ -52,6 +54,12 @@ namespace NppMarkdownPanel.Forms
 
         public string MkdnExtensions { get; set; }
         public string HtmlExtensions { get; set; }
+
+        public const int FILTERS = 10;
+        public string[] filterExts = new string[FILTERS];
+        public string[] filterProgs = new string[FILTERS];
+        public string[] filterArgs = new string[FILTERS];
+        public int filtersFound = 0;
 
         private bool isDarkModeEnabled;
         public bool IsDarkModeEnabled
@@ -97,27 +105,48 @@ namespace NppMarkdownPanel.Forms
             var defaultBodyStyle = "";
             var markdownStyleContent = GetCssContent(filepath);
 
-            // if (!isValidFileExtension(CurrentFilePath))
-            // {
-                // var invalidExtensionMessage = string.Format(MSG_NO_SUPPORTED_FILE_EXT, Path.GetFileName(filepath), SupportedFileExt);
-                // invalidExtensionMessage = string.Format(DEFAULT_HTML_BASE, Path.GetFileName(filepath), markdownStyleContent, defaultBodyStyle, invalidExtensionMessage);
+            if (isValidMkdnExtension())
+            {
+                var resultForBrowser = markdownGenerator.ConvertToHtml(currentText, filepath);
+                var resultForExport = markdownGenerator.ConvertToHtml(currentText, null);
 
-                // return new RenderResult(invalidExtensionMessage, invalidExtensionMessage);
-            // }
+                var markdownHtmlBrowser = string.Format(DEFAULT_HTML_BASE, Path.GetFileName(filepath), markdownStyleContent, defaultBodyStyle, resultForBrowser);
+                var markdownHtmlFileExport = string.Format(DEFAULT_HTML_BASE, Path.GetFileName(filepath), markdownStyleContent, defaultBodyStyle, resultForExport);
+                return new RenderResult(markdownHtmlBrowser, markdownHtmlFileExport);
+            }
+            else if (isValidHtmlExtension())
+                return new RenderResult(currentText, currentText);
+            else
+            {
+                int filter = ValidateFilterExtension();
+                if ( filter < 0 )
+                {
+                    var invalidExtensionMessage = string.Format(MSG_NO_SUPPORTED_FILE_EXT, Path.GetFileName(filepath), MkdnExtensions, HtmlExtensions);
+                    invalidExtensionMessage = string.Format(DEFAULT_HTML_BASE, Path.GetFileName(filepath), markdownStyleContent, defaultBodyStyle, invalidExtensionMessage);
 
-            var resultForBrowser = markdownGenerator.ConvertToHtml(currentText, filepath);
-            var resultForExport = markdownGenerator.ConvertToHtml(currentText, null);
+                    return new RenderResult(invalidExtensionMessage, invalidExtensionMessage);
+                }
 
-            var markdownHtmlBrowser = string.Format(DEFAULT_HTML_BASE, Path.GetFileName(filepath), markdownStyleContent, defaultBodyStyle, resultForBrowser);
-            var markdownHtmlFileExport = string.Format(DEFAULT_HTML_BASE, Path.GetFileName(filepath), markdownStyleContent, defaultBodyStyle, resultForExport);
-            return new RenderResult(markdownHtmlBrowser, markdownHtmlFileExport);
-        }
+                var filterProgram = filterProgs[filter];
+                var filterArguments = filterArgs[filter];
+                var process = new Process
+                {
+                    StartInfo = new ProcessStartInfo
+                    {
+                        FileName = filterProgram,
+                        Arguments = $"{filterArguments} \"{filepath}\"",
+                        UseShellExecute = false,
+                        RedirectStandardOutput = true,
+                        CreateNoWindow = true
+                    }
+                };
 
-        private RenderResult RenderHtmlOnlyInternal(string currentText, string filepath)
-        {
-            var resultForBrowser = currentText;
-            var resultForExport = currentText;
-            return new RenderResult(resultForBrowser, resultForExport);
+                process.Start();
+                string data = process.StandardOutput.ReadToEnd();
+                process.WaitForExit();
+
+                return new RenderResult(data, data);
+            }
         }
 
         private string GetCssContent(string filepath)
@@ -176,42 +205,6 @@ namespace NppMarkdownPanel.Forms
                 renderTask.Start();
             }
         }
-
-        public void RenderHtml(string currentText, string filepath, bool preserveVerticalScrollPosition = true)
-        {
-            if (renderTask == null || renderTask.IsCompleted)
-            {
-                if (preserveVerticalScrollPosition)
-                {
-                    SaveLastVerticalScrollPosition();
-                }
-                else
-                {
-                    lastVerticalScroll = 0;
-                }
-                MakeAndDisplayScreenShot();
-
-                var context = TaskScheduler.FromCurrentSynchronizationContext();
-                renderTask = new Task<RenderResult>(() => RenderHtmlOnlyInternal(currentText, filepath));
-                renderTask.ContinueWith((renderedText) =>
-                {
-                    webBrowserPreview.DocumentText = renderedText.Result.ResultForBrowser;
-                    htmlContentForExport = renderedText.Result.ResultForExport;
-                    if (!String.IsNullOrWhiteSpace(HtmlFileName))
-                    {
-                        bool valid = Utils.ValidateFileSelection(HtmlFileName, out string fullPath, out string error, "HTML Output");
-                        if (valid)
-                        {
-                            HtmlFileName = fullPath; // the validation was run against this path, so we want to make sure the state of the preview matches that
-                            writeHtmlContentToFile(HtmlFileName);
-                        }
-                    }
-                    AdjustZoomLevel();
-                }, context);
-                renderTask.Start();
-            }
-        }
-
         /// <summary>
         /// Makes and displays a screenshot of the current browser content to prevent it from flickering 
         /// while loading updated content
@@ -440,6 +433,32 @@ namespace NppMarkdownPanel.Forms
             }
 
             return matchExtensionList;
+        }
+
+        private int ValidateFilterExtension()
+        {
+            StringBuilder sbFileExtension = new StringBuilder(Win32.MAX_PATH);
+            Win32.SendMessage(PluginBase.nppData._nppHandle, (uint)NppMsg.NPPM_GETEXTPART, Win32.MAX_PATH, sbFileExtension);
+            var currentExtension = sbFileExtension.ToString().ToLower();
+            if ( String.IsNullOrEmpty(currentExtension) )
+                return -1;
+
+            for ( int i = 0; i < filtersFound; i++ )
+            {
+                // if (filterExts[i].Contains(currentExtension.ToLower()))
+                    // return i;
+                var matchExtensionList = false;
+                try
+                {
+                    matchExtensionList = filterExts[i].Split(',').Any(ext => ext != null && currentExtension.Equals("." + ext.Trim().ToLower()));
+                }
+                catch (Exception)
+                {
+                }
+                if ( matchExtensionList )
+                    return i;
+            }
+            return -1;
         }
 
     }
