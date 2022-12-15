@@ -105,7 +105,7 @@ namespace NppMarkdownPanel.Forms
             var defaultBodyStyle = "";
             var markdownStyleContent = GetCssContent(filepath);
 
-            if (isValidMkdnExtension())
+            if (isValidMkdnExtension(CurrentFilePath))
             {
                 var resultForBrowser = markdownGenerator.ConvertToHtml(currentText, filepath);
                 var resultForExport = markdownGenerator.ConvertToHtml(currentText, null);
@@ -114,7 +114,7 @@ namespace NppMarkdownPanel.Forms
                 var markdownHtmlFileExport = string.Format(DEFAULT_HTML_BASE, Path.GetFileName(filepath), markdownStyleContent, defaultBodyStyle, resultForExport);
                 return new RenderResult(markdownHtmlBrowser, markdownHtmlFileExport);
             }
-            else if (isValidHtmlExtension())
+            else if (isValidHtmlExtension(CurrentFilePath))
                 return new RenderResult(currentText, currentText);
             else
             {
@@ -395,14 +395,9 @@ namespace NppMarkdownPanel.Forms
         }
 
 
-        public bool isValidMkdnExtension()
+        public bool isValidMkdnExtension(string filename)
         {
-            StringBuilder sbFileExtension = new StringBuilder(Win32.MAX_PATH);
-            Win32.SendMessage(PluginBase.nppData._nppHandle, (uint)NppMsg.NPPM_GETEXTPART, Win32.MAX_PATH, sbFileExtension);
-            var currentExtension = sbFileExtension.ToString().ToLower();
-            if ( String.IsNullOrEmpty(currentExtension) )
-                return false;
-
+            var currentExtension = Path.GetExtension(filename).ToLower();
             var matchExtensionList = false;
             try
             {
@@ -415,14 +410,9 @@ namespace NppMarkdownPanel.Forms
             return matchExtensionList;
         }
 
-        public bool isValidHtmlExtension()
+        public bool isValidHtmlExtension(string filename)
         {
-            StringBuilder sbFileExtension = new StringBuilder(Win32.MAX_PATH);
-            Win32.SendMessage(PluginBase.nppData._nppHandle, (uint)NppMsg.NPPM_GETEXTPART, Win32.MAX_PATH, sbFileExtension);
-            var currentExtension = sbFileExtension.ToString().ToLower();
-            if ( String.IsNullOrEmpty(currentExtension) )
-                return false;
-
+            var currentExtension = Path.GetExtension(filename).ToLower();
             var matchExtensionList = false;
             try
             {

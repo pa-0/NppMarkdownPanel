@@ -55,9 +55,11 @@ namespace NppMarkdownPanel
         {
             if (isPanelVisible)
             {
+                var currentFilePath = notepadPPGateway.GetCurrentFilePath();
+
                 if (notification.Header.Code == (uint)SciMsg.SCN_UPDATEUI)
                 {
-                    if ( ! (markdownPreviewForm.isValidMkdnExtension() || markdownPreviewForm.isValidHtmlExtension()) )
+                    if ( ! (markdownPreviewForm.isValidMkdnExtension(currentFilePath) || markdownPreviewForm.isValidHtmlExtension(currentFilePath)) )
                         return;
 
                     var scintillaGateway = scintillaGatewayFactory();
@@ -105,7 +107,6 @@ namespace NppMarkdownPanel
                 else if (notification.Header.Code == (uint)NppMsg.NPPN_BUFFERACTIVATED)
                 {
                     // Focus was switched to a new document
-                    var currentFilePath = notepadPPGateway.GetCurrentFilePath();
                     markdownPreviewForm.CurrentFilePath = currentFilePath;
 
                     // if we get a lot tab switches within a short period, dont update preview
@@ -113,7 +114,7 @@ namespace NppMarkdownPanel
                 }
                 else if (notification.Header.Code == (uint)SciMsg.SCN_MODIFIED)
                 {
-                    if ( markdownPreviewForm.isValidMkdnExtension() || markdownPreviewForm.isValidHtmlExtension() )
+                    if ( markdownPreviewForm.isValidMkdnExtension(currentFilePath) || markdownPreviewForm.isValidHtmlExtension(currentFilePath) )
                     {
                         lastTickCount = Environment.TickCount;
                         RenderMarkdownDeferred();
@@ -177,7 +178,8 @@ namespace NppMarkdownPanel
 
         private void ScrollToElementAtLineNo(int lineNo)
         {
-            if ( markdownPreviewForm.isValidMkdnExtension() )
+            var currentFilePath = notepadPPGateway.GetCurrentFilePath();
+            if ( markdownPreviewForm.isValidMkdnExtension(currentFilePath) )
                 markdownPreviewForm.ScrollToElementWithLineNo(lineNo);
             else
             {
