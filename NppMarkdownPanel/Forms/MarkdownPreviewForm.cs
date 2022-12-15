@@ -118,7 +118,7 @@ namespace NppMarkdownPanel.Forms
                 return new RenderResult(currentText, currentText);
             else
             {
-                int filter = ValidateFilterExtension();
+                int filter = ValidateFilterExtension(CurrentFilePath);
                 if ( filter < 0 )
                 {
                     var invalidExtensionMessage = string.Format(MSG_NO_SUPPORTED_FILE_EXT, Path.GetFileName(filepath), MkdnExtensions, HtmlExtensions);
@@ -425,18 +425,11 @@ namespace NppMarkdownPanel.Forms
             return matchExtensionList;
         }
 
-        private int ValidateFilterExtension()
+        private int ValidateFilterExtension(string filename)
         {
-            StringBuilder sbFileExtension = new StringBuilder(Win32.MAX_PATH);
-            Win32.SendMessage(PluginBase.nppData._nppHandle, (uint)NppMsg.NPPM_GETEXTPART, Win32.MAX_PATH, sbFileExtension);
-            var currentExtension = sbFileExtension.ToString().ToLower();
-            if ( String.IsNullOrEmpty(currentExtension) )
-                return -1;
-
+            var currentExtension = Path.GetExtension(filename).ToLower();
             for ( int i = 0; i < filtersFound; i++ )
             {
-                // if (filterExts[i].Contains(currentExtension.ToLower()))
-                    // return i;
                 var matchExtensionList = false;
                 try
                 {
