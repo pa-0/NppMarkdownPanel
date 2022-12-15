@@ -396,11 +396,11 @@ namespace NppMarkdownPanel
             if (nppReady && autoShowPanel)
             {
                 // automatically show panel for supported file types
-                // if ((!isPanelVisible && markdownPreviewForm.isValidFileExtension(currentFilePath)) ||
-                    // (isPanelVisible && !markdownPreviewForm.isValidFileExtension(currentFilePath)))
-                // {
-                    // TogglePanelVisible();
-                // }
+                if ((!isPanelVisible && markdownPreviewForm.isValidMkdnExtension(currentFilePath)) ||
+                    (isPanelVisible && !markdownPreviewForm.isValidMkdnExtension(currentFilePath)))
+                {
+                    TogglePanelVisible();
+                }
             }
         }
 
