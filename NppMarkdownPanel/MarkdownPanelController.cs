@@ -202,6 +202,7 @@ namespace NppMarkdownPanel
             markdownPreviewForm.ShowToolbar = Utils.ReadIniBool("Options", "ShowToolbar", iniFilePath);
             markdownPreviewForm.MkdnExtensions = Win32.ReadIniValue("Options", "MkdnExtensions", iniFilePath, DEFAULT_SUPPORTED_MKDN_EXT);
             markdownPreviewForm.HtmlExtensions = Win32.ReadIniValue("Options", "HtmlExtensions", iniFilePath, DEFAULT_SUPPORTED_HTML_EXT);
+            markdownPreviewForm.ShowStatusbar = Utils.ReadIniBool("Options", "ShowStatusbar", iniFilePath);
             autoShowPanel = Utils.ReadIniBool("Options", "AutoShowPanel", iniFilePath);
             markdownPreviewForm.IsDarkModeEnabled = IsDarkModeEnabled();
 
@@ -229,7 +230,7 @@ namespace NppMarkdownPanel
 
         private void EditSettings()
         {
-            var settingsForm = new SettingsForm(markdownPreviewForm.ZoomLevel, markdownPreviewForm.CssFileName, markdownPreviewForm.HtmlFileName, markdownPreviewForm.ShowToolbar, markdownPreviewForm.CssDarkModeFileName, markdownPreviewForm.MkdnExtensions, markdownPreviewForm.HtmlExtensions, autoShowPanel);
+            var settingsForm = new SettingsForm(markdownPreviewForm.ZoomLevel, markdownPreviewForm.CssFileName, markdownPreviewForm.HtmlFileName, markdownPreviewForm.ShowToolbar, markdownPreviewForm.CssDarkModeFileName, markdownPreviewForm.MkdnExtensions, markdownPreviewForm.HtmlExtensions, autoShowPanel, markdownPreviewForm.ShowStatusbar);
             if (settingsForm.ShowDialog() == DialogResult.OK)
             {
                 markdownPreviewForm.CssFileName = settingsForm.CssFileName;
@@ -239,6 +240,7 @@ namespace NppMarkdownPanel
                 markdownPreviewForm.ShowToolbar = settingsForm.ShowToolbar;
                 markdownPreviewForm.MkdnExtensions = settingsForm.MkdnExtensions;
                 markdownPreviewForm.HtmlExtensions = settingsForm.HtmlExtensions;
+                markdownPreviewForm.ShowStatusbar = settingsForm.ShowStatusbar;
                 autoShowPanel = settingsForm.AutoShowPanel;
                 markdownPreviewForm.IsDarkModeEnabled = IsDarkModeEnabled();
                 SaveSettings();
@@ -314,6 +316,7 @@ namespace NppMarkdownPanel
             Win32.WriteIniValue("Options", "ShowToolbar", markdownPreviewForm.ShowToolbar.ToString(), iniFilePath);
             Win32.WriteIniValue("Options", "MkdnExtensions", markdownPreviewForm.MkdnExtensions, iniFilePath);
             Win32.WriteIniValue("Options", "HtmlExtensions", markdownPreviewForm.HtmlExtensions, iniFilePath);
+            Win32.WriteIniValue("Options", "ShowStatusbar", markdownPreviewForm.ShowStatusbar.ToString(), iniFilePath);
             Win32.WriteIniValue("Options", "AutoShowPanel", autoShowPanel.ToString(), iniFilePath);
         }
         private void ShowAboutDialog()

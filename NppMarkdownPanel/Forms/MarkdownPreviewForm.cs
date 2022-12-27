@@ -42,6 +42,7 @@ namespace NppMarkdownPanel.Forms
         private int lastVerticalScroll = 0;
         private string htmlContentForExport;
         private bool showToolbar;
+        private bool showStatusbar;
 
         public string CssFileName { get; set; }
 
@@ -94,6 +95,16 @@ namespace NppMarkdownPanel.Forms
             {
                 showToolbar = value;
                 tbPreview.Visible = value;
+            }
+        }
+
+        public bool ShowStatusbar
+        {
+            get => showStatusbar;
+            set
+            {
+                showStatusbar = value;
+                statusStrip2.Visible = value;
             }
         }
 
