@@ -35,21 +35,6 @@ limitations with filters.  The rendered views do not synchronize scrolling no
 matter what the plugin menu setting is and they do not update "live" with typing, 
 only update after document save.
 
-### Used libs and icons
-
-Using **Markdig** v 0.30.4 by xoofx - [https://github.com/lunet-io/markdig](https://github.com/lunet-io/markdig)
-
-Using **NotepadPlusPlusPluginPack.Net** by kbilsted - [https://github.com/kbilsted/NotepadPlusPlusPluginPack.Net](https://github.com/kbilsted/NotepadPlusPlusPluginPack.Net)	
-
-Using **ColorCode (Portable)** 1.0.3 by Bashir Souid and Richard Slater - [https://github.com/RichardSlater/ColorCodePortable](https://github.com/RichardSlater/ColorCodePortable)
-
-Using **Markdig.SyntaxHighlighting** 1.1.7 by Richard Slater [https://github.com/RichardSlater/Markdig.SyntaxHighlighting](https://github.com/RichardSlater/Markdig.SyntaxHighlighting)
-
-Using Markdown style **github-markdown-css** by sindresorhus - [https://github.com/sindresorhus/github-markdown-css](https://github.com/sindresorhus/github-markdown-css)
-
-Using portions of nea's **MarkdownViewerPlusPlus** Plugin code - [https://github.com/nea/MarkdownViewerPlusPlus](https://github.com/nea/MarkdownViewerPlusPlus)
-
-Using the **Markdown icon** by dcurtis  - [https://github.com/dcurtis/markdown-mark](https://github.com/dcurtis/markdown-mark)
 
 ## Prerequisites
 - .NET 4.5.2 or higher 
@@ -121,6 +106,97 @@ This is similar to the _Synchronize Vertical Scrolling_ option of Notepad++ for 
 ### Synchronize on vertical scroll
 
 Enabling this in the plugin's menu (Plugins -> Markdown Panel) attempts to do a better job at synchronizing scrolling between the preview panel and the document that is being edited without the need for caret movement (in other words, just using scrollbars should sync too).
+
+<!--
+
+## Version History
+
+### Version 0.7.1 (released 2022-12-27)
+
+- bug fixes
+	- Footnotes (links to footnotes) don't work #28
+	- Code fences not rendered for unknown languages (contributed by [rdipardo](https://github.com/rdipardo)) #55
+	- Errorhandling when libraries are missing #57
+	- Zoom label does not update on Settings panel init (contributed by [vinsworldcom](https://github.com/vinsworldcom)) #58
+	- Settings dialog should render only if visible (contributed by [vinsworldcom](https://github.com/vinsworldcom)) #66
+- features
+	- Synchronize with first visible line in editor #14
+    - Select/follow active editor pane when using mulitple editors #20
+	- YAML Frontmatter is rendered as code block #46
+	- Status bar to preview URLs for links (contributed by [vinsworldcom](https://github.com/vinsworldcom)) #60
+	- Save As toolbar button provides default directory and filename (contributed by [vinsworldcom](https://github.com/vinsworldcom)) #61
+	- Menu includes Help to access README / menu item order improved (contributed by [vinsworldcom](https://github.com/vinsworldcom)) #64
+	
+### Version 0.7.0 (released 2022-12-09)
+
+- dark mode support (_requires Notepad++ version 8.4.1 or later_)
+- new markdig 0.30.4 integrated
+- code/syntax highlighting
+	- example C# code with highlighting:
+![code-highlighting](help/code-highlighting.png "Example code highlighting")
+- new zoom level range from 80 % to 800% (for 4K Displays)
+- all html files are saved as utf-8 files
+- restrict preview to files with a specific extension
+- automatically open panel for supported files
+- enhanced about dialog
+
+
+### Version 0.6.2 (released 2022-06-02)
+Bugfix release
+- viewer was crashed by too large documents (more than 10000 bytes)
+
+### Version 0.6.1 (released 2022-05-26)
+- fix embedded images
+- fix dark icon
+
+### Version 0.6.0 (released 2022-05-26)
+
+- plugin headers for npp updated
+- darkmode icon
+- fixed refresh bug for 64-bit version of plugin
+- new zoom level range from 40 % to 400%
+- save html
+- images for help file now included
+
+### Version 0.5.0
+- change zoomlevel for the preview in settings dialog
+- change css file for the markdown style
+- the new settings are persistent
+- open settings dialog: Plugins-> NppMarkdownPanel -> Edit Settings
+
+### Version 0.4.0
+- switched from CommonMark.Net to markdig rendering library
+
+### Version 0.3.0
+- synchronize viewer with caret position
+
+### Version 0.2.0
+- Initial release
+
+### Used libs and resources
+
+| Name                              | Version | Authors                             | Link                                                                                                                   |
+|-----------------------------------|---------|-------------------------------------|------------------------------------------------------------------------------------------------------------------------|
+| **Markdig**                       | 0.30.4  | xoofx                               | [https://github.com/lunet-io/markdig](https://github.com/lunet-io/markdig)                                             |
+| **NotepadPlusPlusPluginPack.Net** |   0.95  | kbilsted                            | [https://github.com/kbilsted/NotepadPlusPlusPluginPack.Net](https://github.com/kbilsted/NotepadPlusPlusPluginPack.Net) |
+| **ColorCode (Portable)**          | 1.0.3   | Bashir Souid and Richard Slater     | [https://github.com/RichardSlater/ColorCodePortable](https://github.com/RichardSlater/ColorCodePortable)               |
+| **Markdig.SyntaxHighlighting**    | 1.1.7   | Richard Slater                      | [https://github.com/RichardSlater/Markdig.SyntaxHighlighting](https://github.com/RichardSlater/Markdig.SyntaxHighlighting) |
+| **github-markdown-css**           | 3.0.1   | sindresorhus                        | [https://github.com/sindresorhus/github-markdown-css](https://github.com/sindresorhus/github-markdown-css)             |
+| **Markdown icon**                 |         | dcurtis                             | [https://github.com/dcurtis/markdown-mark](https://github.com/dcurtis/markdown-mark)                                   |
+
+The plugin uses portions of nea's **MarkdownViewerPlusPlus** Plugin code - [https://github.com/nea/MarkdownViewerPlusPlus](https://github.com/nea/MarkdownViewerPlusPlus)
+
+
+
+### Contributors
+
+Thanks to the contributors: 
+
+[vinsworldcom](https://github.com/vinsworldcom), [rdipardo](https://github.com/rdipardo),
+[RicoP](https://github.com/RicoP), [UrsineRaven](https://github.com/UrsineRaven) and
+[eeucalyptus](https://github.com/eeucalyptus)
+
+-->
 
 ## License
 
