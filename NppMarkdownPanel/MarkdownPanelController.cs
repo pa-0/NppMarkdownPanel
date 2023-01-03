@@ -30,8 +30,10 @@ namespace NppMarkdownPanel
 
         private readonly Func<IScintillaGateway> scintillaGatewayFactory;
         private readonly INotepadPPGateway notepadPPGateway;
-        private int lastCaretPosition;
+
         private string iniFilePath;
+
+        private int lastCaretPosition;
         private bool syncViewWithCaretPosition;
         private bool syncViewWithScrollPosition;
 
@@ -79,11 +81,11 @@ namespace NppMarkdownPanel
                             ScrollToElementAtLineNo(scintillaGateway.GetCurrentLineNumber() - buffer);
                         }
                     }
-                    else if (syncViewWithScrollPosition && lastCaretPosition != scintillaGateway.GetFirstVisibleLine())
+                    else if (syncViewWithScrollPosition && lastCaretPosition != firstVisible)
                     {
-                        lastCaretPosition = scintillaGateway.GetFirstVisibleLine();
+                        lastCaretPosition = firstVisible;
                         var middleLine = lastCaretPosition + buffer;
-                        if (scintillaGateway.GetFirstVisibleLine() == 0)
+                        if (firstVisible == 0)
                         {
                             ScrollToElementAtLineNo(0);
                         }
@@ -200,9 +202,9 @@ namespace NppMarkdownPanel
             markdownPreviewForm.ZoomLevel = Win32.GetPrivateProfileInt("Options", "ZoomLevel", 130, iniFilePath);
             markdownPreviewForm.HtmlFileName = Win32.ReadIniValue("Options", "HtmlFileName", iniFilePath);
             markdownPreviewForm.ShowToolbar = Utils.ReadIniBool("Options", "ShowToolbar", iniFilePath);
+            markdownPreviewForm.ShowStatusbar = Utils.ReadIniBool("Options", "ShowStatusbar", iniFilePath);
             markdownPreviewForm.MkdnExtensions = Win32.ReadIniValue("Options", "MkdnExtensions", iniFilePath, DEFAULT_SUPPORTED_MKDN_EXT);
             markdownPreviewForm.HtmlExtensions = Win32.ReadIniValue("Options", "HtmlExtensions", iniFilePath, DEFAULT_SUPPORTED_HTML_EXT);
-            markdownPreviewForm.ShowStatusbar = Utils.ReadIniBool("Options", "ShowStatusbar", iniFilePath);
             autoShowPanel = Utils.ReadIniBool("Options", "AutoShowPanel", iniFilePath);
             markdownPreviewForm.IsDarkModeEnabled = IsDarkModeEnabled();
 
@@ -242,6 +244,7 @@ namespace NppMarkdownPanel
                 markdownPreviewForm.HtmlExtensions = settingsForm.HtmlExtensions;
                 markdownPreviewForm.ShowStatusbar = settingsForm.ShowStatusbar;
                 autoShowPanel = settingsForm.AutoShowPanel;
+
                 markdownPreviewForm.IsDarkModeEnabled = IsDarkModeEnabled();
                 SaveSettings();
                 //Update Preview
@@ -314,9 +317,9 @@ namespace NppMarkdownPanel
             Win32.WriteIniValue("Options", "ZoomLevel", markdownPreviewForm.ZoomLevel.ToString(), iniFilePath);
             Win32.WriteIniValue("Options", "HtmlFileName", markdownPreviewForm.HtmlFileName, iniFilePath);
             Win32.WriteIniValue("Options", "ShowToolbar", markdownPreviewForm.ShowToolbar.ToString(), iniFilePath);
+            Win32.WriteIniValue("Options", "ShowStatusbar", markdownPreviewForm.ShowStatusbar.ToString(), iniFilePath);
             Win32.WriteIniValue("Options", "MkdnExtensions", markdownPreviewForm.MkdnExtensions, iniFilePath);
             Win32.WriteIniValue("Options", "HtmlExtensions", markdownPreviewForm.HtmlExtensions, iniFilePath);
-            Win32.WriteIniValue("Options", "ShowStatusbar", markdownPreviewForm.ShowStatusbar.ToString(), iniFilePath);
             Win32.WriteIniValue("Options", "AutoShowPanel", autoShowPanel.ToString(), iniFilePath);
         }
         private void ShowAboutDialog()
