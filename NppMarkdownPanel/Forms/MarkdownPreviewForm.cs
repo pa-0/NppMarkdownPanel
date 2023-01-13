@@ -124,8 +124,8 @@ namespace NppMarkdownPanel.Forms
 
             if (isValidMkdnExtension(CurrentFilePath))
             {
-                var resultForBrowser = markdownGenerator.ConvertToHtml(currentText, filepath);
-                var resultForExport = markdownGenerator.ConvertToHtml(currentText, null);
+                var resultForBrowser = markdownGenerator.ConvertToHtml(currentText, filepath, true);
+                var resultForExport = markdownGenerator.ConvertToHtml(currentText, null, false);
 
                 var markdownHtmlBrowser = string.Format(DEFAULT_HTML_BASE, Path.GetFileName(filepath), markdownStyleContent, defaultBodyStyle, resultForBrowser);
                 var markdownHtmlFileExport = string.Format(DEFAULT_HTML_BASE, Path.GetFileName(filepath), markdownStyleContent, defaultBodyStyle, resultForExport);
