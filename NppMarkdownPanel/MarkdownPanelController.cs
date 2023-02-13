@@ -267,9 +267,8 @@ namespace NppMarkdownPanel
 
         private void ShowHelp()
         {
-            StringBuilder sbPluginPath = new StringBuilder(Win32.MAX_PATH);
-            Win32.SendMessage(PluginBase.nppData._nppHandle, (uint)NppMsg.NPPM_GETPLUGINHOMEPATH, Win32.MAX_PATH, sbPluginPath);
-            var helpFile = Path.Combine($"{sbPluginPath}", Main.PluginFilename, "README.md");
+            var currentPluginPath = Utils.GetPluginDirectory();
+            var helpFile = Path.Combine(currentPluginPath, "README.md");
             Win32.SendMessage(PluginBase.nppData._nppHandle, (uint)NppMsg.NPPM_DOOPEN, 0, helpFile);
             if (!isPanelVisible)
                 TogglePanelVisible();
@@ -282,7 +281,7 @@ namespace NppMarkdownPanel
             Win32.SendMessage(PluginBase.nppData._nppHandle, (uint)NppMsg.NPPM_GETPLUGINSCONFIGDIR, Win32.MAX_PATH, sbIniFilePath);
             iniFilePath = sbIniFilePath.ToString();
             if (!Directory.Exists(iniFilePath)) Directory.CreateDirectory(iniFilePath);
-            iniFilePath = Path.Combine(iniFilePath, Main.PluginFilename + ".ini");
+            iniFilePath = Path.Combine(iniFilePath, Main.ModuleName + ".ini");
         }
 
         private void SyncViewWithCaret()
@@ -349,11 +348,11 @@ namespace NppMarkdownPanel
             {
                 NppTbData _nppTbData = new NppTbData();
                 _nppTbData.hClient = markdownPreviewForm.Handle;
-                _nppTbData.pszName = Main.PluginName;
+                _nppTbData.pszName = Main.PluginTitle;
                 _nppTbData.dlgID = idMyDlg;
                 _nppTbData.uMask = NppTbMsg.DWS_DF_CONT_RIGHT | NppTbMsg.DWS_ICONTAB | NppTbMsg.DWS_ICONBAR;
                 _nppTbData.hIconTab = (uint)ConvertBitmapToIcon(Properties.Resources.markdown_16x16_solid_bmp).Handle;
-                _nppTbData.pszModuleName = Main.PluginFilename;
+                _nppTbData.pszModuleName = Main.ModuleName;
                 IntPtr _ptrNppTbData = Marshal.AllocHGlobal(Marshal.SizeOf(_nppTbData));
                 Marshal.StructureToPtr(_nppTbData, _ptrNppTbData, false);
 
