@@ -20,8 +20,9 @@ namespace NppMarkdownPanel.Forms
         public string MkdnExtensions { get; set; }
         public string HtmlExtensions { get; set; }
         public bool AutoShowPanel { get; set; }
+        public bool ShowStatusbar { get; set; }
 
-        public SettingsForm(int zoomLevel, string cssFileName, string htmlFileName, bool showToolbar, string cssDarkModeFileName, string mkdnExtensions, string htmlExtensions, bool autoShowPanel)
+        public SettingsForm(int zoomLevel, string cssFileName, string htmlFileName, bool showToolbar, string cssDarkModeFileName, string mkdnExtensions, string htmlExtensions, bool autoShowPanel, bool showStatusbar)
         {
             ZoomLevel = zoomLevel;
             CssFileName = cssFileName;
@@ -31,6 +32,8 @@ namespace NppMarkdownPanel.Forms
             MkdnExtensions = mkdnExtensions;
             HtmlExtensions = htmlExtensions;
             AutoShowPanel = autoShowPanel;
+            ShowStatusbar = showStatusbar;
+
             InitializeComponent();
 
             trackBar1.Value = zoomLevel;
@@ -42,6 +45,7 @@ namespace NppMarkdownPanel.Forms
             tbMkdnExts.Text = mkdnExtensions;
             tbHtmlExts.Text = htmlExtensions;
             cbAutoShowPanel.Checked = autoShowPanel;
+            cbShowStatusbar.Checked = showStatusbar;
         }
 
         private void trackBar1_ValueChanged(object sender, EventArgs e)
@@ -192,6 +196,11 @@ namespace NppMarkdownPanel.Forms
         private void cbAutoShowPanel_CheckedChanged(object sender, EventArgs e)
         {
             AutoShowPanel = cbAutoShowPanel.Checked;
+        }
+
+        private void cbShowStatusbar_CheckedChanged(object sender, EventArgs e)
+        {
+            ShowStatusbar = cbShowStatusbar.Checked;
         }
     }
 }

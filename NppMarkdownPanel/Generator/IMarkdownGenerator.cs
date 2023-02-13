@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace NppMarkdownPanel
+namespace NppMarkdownPanel.Generator
 {
     public interface IMarkdownGenerator
     {
@@ -14,7 +14,8 @@ namespace NppMarkdownPanel
         /// </summary>
         /// <param name="markDownText"></param>
         /// <param name="filepath"></param>
+        /// <param name="supportEscapeCharsInImageUris"></param>
         /// <returns>html formatted text</returns>
-        string ConvertToHtml(string markDownText, string filepath);
+        string ConvertToHtml(string markDownText, string filepath, bool supportEscapeCharsInImageUris);
     }
 }

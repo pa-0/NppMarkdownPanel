@@ -4,8 +4,11 @@ namespace NppMarkdownPanel
 {
     class Main
     {
+        // PluginName is used as npp plugin's menu entry
         public const string PluginName = "Markdown Panel";
-        public const string PluginFilename = "MarkdownPanel";
+        // Modulename is used as config name (ini-file) and as _nppTbData.pszModuleName
+        public const string ModuleName = "MarkdownPanel";
+        public const string PluginTitle = "Markdown Panel";
         private static MarkdownPanelController mdpanel = new MarkdownPanelController();
 
         public static void OnNotification(ScNotification notification)
