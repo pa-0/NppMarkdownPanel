@@ -111,6 +111,29 @@ Enabling this in the plugin's menu (Plugins -> Markdown Panel) attempts to do a 
 
 ## Version History
 
+### Version 0.7.3 (released 2023-02-12)
+- bug fixes
+	- Settings file NppMarkdownPanel.ini isn't used anymore #78
+	- Plugin release v0.7.2 searches help files in wrong directory #76
+	
+### Version 0.7.2 (released 2023-02-11)
+- bug fixes
+	- Display images with Url-encoded space character (%20) in the filename (contributed by [andrzejQ](https://github.com/andrzejQ) ) #39
+- features
+	- Plugin-Menu entry renamed to **MarkdownPanel**
+	- Syntax highlighting is now controlled by CSS Styles. See `style.css` and `style-dark.css` after comment `/* Syntax Highlighting */` #71
+	- Feature to preprocess markdown files before they are send to the converter. Furthermore it's possible to postprocess the generated html files (created by markdig). 
+	To enable this feature it's necessary to configure pre/post-processor commands (can be any commandline program) in the config file `plugins/Config/NppMarkdownPanel.ini`.
+	The placeholders `%inputfile%` and `%outputfile%` have to be set in the commandline and will be resolved at runtime (with temporary file names).
+	An example C# commandline-project can be found under: `misc\PPExtensions\MdpPrePostprocessorTemplate.sln`
+```
+[Options]
+PreProcessorExe=C:\temp\preprocessor.exe
+PreProcessorArguments=%inputfile% %outputfile%
+PostProcessorExe=C:\temp\preprocessor\postprocessor.exe
+PostProcessorArguments=%inputfile% %outputfile%
+```
+
 ### Version 0.7.1 (released 2022-12-27)
 
 - bug fixes
