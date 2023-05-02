@@ -35,7 +35,6 @@
             this.webBrowserPreview = new System.Windows.Forms.WebBrowser();
             this.tbPreview = new System.Windows.Forms.ToolStrip();
             this.btnSaveHtml = new System.Windows.Forms.ToolStripButton();
-            this.btnPrintPreview = new System.Windows.Forms.ToolStripButton();
             this.statusStrip2 = new System.Windows.Forms.StatusStrip();
             this.toolStripStatusLabel1 = new System.Windows.Forms.ToolStripStatusLabel();
             this.panelPreview.SuspendLayout();
@@ -109,8 +108,7 @@
             this.tbPreview.Dock = System.Windows.Forms.DockStyle.None;
             this.tbPreview.ImageScalingSize = new System.Drawing.Size(20, 20);
             this.tbPreview.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.btnSaveHtml,
-            this.btnPrintPreview});
+            this.btnSaveHtml});
             this.tbPreview.Location = new System.Drawing.Point(0, 0);
             this.tbPreview.Name = "tbPreview";
             this.tbPreview.Size = new System.Drawing.Size(811, 27);
@@ -125,15 +123,6 @@
             this.btnSaveHtml.Size = new System.Drawing.Size(93, 24);
             this.btnSaveHtml.Text = "Save As...";
             this.btnSaveHtml.Click += new System.EventHandler(this.btnSaveHtml_Click);
-            // 
-            // btnPrintPreview
-            // 
-            this.btnPrintPreview.Image = ((System.Drawing.Image)(resources.GetObject("btnPrintPreview.Image")));
-            this.btnPrintPreview.ImageTransparentColor = System.Drawing.Color.Magenta;
-            this.btnPrintPreview.Name = "btnPrintPreview";
-            this.btnPrintPreview.Size = new System.Drawing.Size(118, 24);
-            this.btnPrintPreview.Text = "Print Preview";
-            this.btnPrintPreview.Visible = false;
             // 
             // statusStrip2
             // 
@@ -186,7 +175,6 @@
         private System.Windows.Forms.ToolStripContainer toolStripContainer1;
         private System.Windows.Forms.ToolStrip tbPreview;
         private System.Windows.Forms.ToolStripButton btnSaveHtml;
-        private System.Windows.Forms.ToolStripButton btnPrintPreview;
         private System.Windows.Forms.StatusStrip statusStrip2;
         private System.Windows.Forms.ToolStripStatusLabel toolStripStatusLabel1;
     }

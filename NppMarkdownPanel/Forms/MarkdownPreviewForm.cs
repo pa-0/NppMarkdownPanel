@@ -1,4 +1,4 @@
-﻿using Kbg.NppPluginNET.PluginInfrastructure;
+﻿using NppMarkdownPanel.Entities;
 using NppMarkdownPanel.Generator;
 using SHDocVw;
 using System;
@@ -17,7 +17,7 @@ using System.Windows.Forms;
 
 namespace NppMarkdownPanel.Forms
 {
-    public partial class MarkdownPreviewForm : Form
+    public partial class MarkdownPreviewForm : Form, IViewerInterface
     {
         const string DEFAULT_HTML_BASE =
          @"<!DOCTYPE html>
@@ -39,83 +39,53 @@ namespace NppMarkdownPanel.Forms
         const string MSG_NO_SUPPORTED_FILE_EXT = "<h3>The current file <u>{0}</u> has no valid Markdown file extension.</h3><div><b>Valid file extensions:</b> {1}</div><div><b>Valid HTML file extensions:</b> {2}</div>";
 
         private Task<RenderResult> renderTask;
-        private readonly Action toolWindowCloseAction;
         private int lastVerticalScroll = 0;
         private string htmlContentForExport;
-        private bool showToolbar;
-        private bool showStatusbar;
+        private Settings settings;
+        private string currentFilePath;
 
-        public string CssFileName { get; set; }
-
-        public string CssDarkModeFileName { get; set; }
-
-        public int ZoomLevel { get; set; }
-        public string HtmlFileName { get; set; }
-
-        public string CurrentFilePath { get; set; }
-
-        public string MkdnExtensions { get; set; }
-        public string HtmlExtensions { get; set; }
-
-        public const int FILTERS = 10;
-        public string[] filterExts = new string[FILTERS];
-        public string[] filterProgs = new string[FILTERS];
-        public string[] filterArgs = new string[FILTERS];
-        public int filtersFound = 0;
-
-        private bool isDarkModeEnabled;
-        public bool IsDarkModeEnabled
+        public void UpdateSettings(Settings settings)
         {
-            get { return isDarkModeEnabled; }
-            set
+            this.settings = settings;
+
+            var isDarkModeEnabled = settings.IsDarkModeEnabled;
+            if (isDarkModeEnabled)
             {
-                isDarkModeEnabled = value;
-                if (isDarkModeEnabled)
-                {
-                    tbPreview.BackColor = Color.Black;
-                    btnSaveHtml.ForeColor = Color.White;
-                    statusStrip2.BackColor = Color.Black;
-                    toolStripStatusLabel1.ForeColor = Color.White;
-
-                }
-                else
-                {
-                    tbPreview.BackColor = SystemColors.Control;
-                    btnSaveHtml.ForeColor = SystemColors.ControlText;
-                    statusStrip2.BackColor = SystemColors.Control;
-                    toolStripStatusLabel1.ForeColor = SystemColors.ControlText;
-
-                }
+                tbPreview.BackColor = Color.Black;
+                btnSaveHtml.ForeColor = Color.White;
+                statusStrip2.BackColor = Color.Black;
+                toolStripStatusLabel1.ForeColor = Color.White;
             }
-        }
-
-        public bool ShowToolbar
-        {
-            get => showToolbar;
-            set
+            else
             {
-                showToolbar = value;
-                tbPreview.Visible = value;
+                tbPreview.BackColor = SystemColors.Control;
+                btnSaveHtml.ForeColor = SystemColors.ControlText;
+                statusStrip2.BackColor = SystemColors.Control;
+                toolStripStatusLabel1.ForeColor = SystemColors.ControlText;
             }
-        }
 
-        public bool ShowStatusbar
-        {
-            get => showStatusbar;
-            set
-            {
-                showStatusbar = value;
-                statusStrip2.Visible = value;
-            }
+            tbPreview.Visible = settings.ShowToolbar;
+            statusStrip2.Visible = settings.ShowStatusbar;
         }
 
         private MarkdownService markdownService;
+        private ActionRef<Message> wndProcCallback;
 
-        public MarkdownPreviewForm(Action toolWindowCloseAction, MarkdownService markdownService)
+        public static IViewerInterface InitViewer(Settings settings, ActionRef<Message> wndProcCallback)
         {
-            this.toolWindowCloseAction = toolWindowCloseAction;
+            return new MarkdownPreviewForm(settings, wndProcCallback);
+        }
+
+        private MarkdownPreviewForm(Settings settings, ActionRef<Message> wndProcCallback)
+        {
+            this.wndProcCallback = wndProcCallback;
+            markdownService = new MarkdownService(new MarkdigWrapperMarkdownGenerator());
+            markdownService.PreProcessorCommandFilename = settings.PreProcessorCommandFilename;
+            markdownService.PreProcessorArguments = settings.PreProcessorArguments;
+            markdownService.PostProcessorCommandFilename = settings.PostProcessorCommandFilename;
+            markdownService.PostProcessorArguments = settings.PostProcessorArguments;
+            this.settings = settings;
             InitializeComponent();
-            this.markdownService = markdownService;
         }
 
         private RenderResult RenderHtmlInternal(string currentText, string filepath)
@@ -123,7 +93,7 @@ namespace NppMarkdownPanel.Forms
             var defaultBodyStyle = "";
             var markdownStyleContent = GetCssContent(filepath);
 
-            if (isValidMkdnExtension(CurrentFilePath))
+            if (IsValidMkdnExtension(currentFilePath))
             {
                 var resultForBrowser = markdownService.ConvertToHtml(currentText, filepath, true);
                 var resultForExport = markdownService.ConvertToHtml(currentText, null, false);
@@ -132,21 +102,21 @@ namespace NppMarkdownPanel.Forms
                 var markdownHtmlFileExport = string.Format(DEFAULT_HTML_BASE, Path.GetFileName(filepath), markdownStyleContent, defaultBodyStyle, resultForExport);
                 return new RenderResult(markdownHtmlBrowser, markdownHtmlFileExport);
             }
-            else if (isValidHtmlExtension(CurrentFilePath))
+            else if (IsValidHtmlExtension(currentFilePath))
                 return new RenderResult(currentText, currentText);
             else
             {
-                int filter = ValidateFilterExtension(CurrentFilePath);
+                int filter = ValidateFilterExtension(currentFilePath);
                 if ( filter < 0 )
                 {
-                    var invalidExtensionMessage = string.Format(MSG_NO_SUPPORTED_FILE_EXT, Path.GetFileName(filepath), MkdnExtensions, HtmlExtensions);
+                    var invalidExtensionMessage = string.Format(MSG_NO_SUPPORTED_FILE_EXT, Path.GetFileName(filepath), settings.MkdnExtensions, settings.HtmlExtensions);
                     invalidExtensionMessage = string.Format(DEFAULT_HTML_BASE, Path.GetFileName(filepath), markdownStyleContent, defaultBodyStyle, invalidExtensionMessage);
 
                     return new RenderResult(invalidExtensionMessage, invalidExtensionMessage);
                 }
 
-                var filterProgram = filterProgs[filter];
-                var filterArguments = filterArgs[filter];
+                var filterProgram = settings.filterProgs[filter];
+                var filterArguments = settings.filterArgs[filter];
                 var process = new Process
                 {
                     StartInfo = new ProcessStartInfo
@@ -174,8 +144,8 @@ namespace NppMarkdownPanel.Forms
 
             var assemblyPath = Path.GetDirectoryName(Assembly.GetAssembly(GetType()).Location);
 
-            var defaultCss = IsDarkModeEnabled ? MainResources.DefaultDarkModeCssFile : MainResources.DefaultCssFile;
-            var customCssFile = IsDarkModeEnabled ? CssDarkModeFileName : CssFileName;
+            var defaultCss = settings.IsDarkModeEnabled ? Settings.DefaultDarkModeCssFile : Settings.DefaultCssFile;
+            var customCssFile = settings.IsDarkModeEnabled ? settings.CssDarkModeFileName : settings.CssFileName;
             if (File.Exists(customCssFile))
             {
                 cssContent = File.ReadAllText(customCssFile);
@@ -209,13 +179,13 @@ namespace NppMarkdownPanel.Forms
                 {
                     webBrowserPreview.DocumentText = renderedText.Result.ResultForBrowser;
                     htmlContentForExport = renderedText.Result.ResultForExport;
-                    if (!String.IsNullOrWhiteSpace(HtmlFileName))
+                    if (!String.IsNullOrWhiteSpace(settings.HtmlFileName))
                     {
-                        bool valid = Utils.ValidateFileSelection(HtmlFileName, out string fullPath, out string error, "HTML Output");
+                        bool valid = Utils.ValidateFileSelection(settings.HtmlFileName, out string fullPath, out string error, "HTML Output");
                         if (valid)
                         {
-                            HtmlFileName = fullPath; // the validation was run against this path, so we want to make sure the state of the preview matches that
-                            writeHtmlContentToFile(HtmlFileName);
+                            settings.HtmlFileName = fullPath; // the validation was run against this path, so we want to make sure the state of the preview matches that
+                            writeHtmlContentToFile(settings.HtmlFileName);
                         }
                     }
                     AdjustZoomLevel();
@@ -323,37 +293,15 @@ namespace NppMarkdownPanel.Forms
             Application.DoEvents();
 
             var browserInst = ((SHDocVw.IWebBrowser2)(webBrowserPreview.ActiveXInstance));
-            browserInst.ExecWB(OLECMDID.OLECMDID_OPTICAL_ZOOM, OLECMDEXECOPT.OLECMDEXECOPT_DONTPROMPTUSER, ZoomLevel, IntPtr.Zero);
-            //   webBrowserPreview.Document.Window.ScrollTo(0, 0);
+            int zoomLevel = settings.ZoomLevel;
 
-        }
-
-        [StructLayout(LayoutKind.Sequential)]
-        public struct NMHDR
-        {
-            public IntPtr hwndFrom;
-            public IntPtr idFrom;
-            public int code;
-        }
-
-        public enum WindowsMessage
-        {
-            WM_NOTIFY = 0x004E
+            browserInst.ExecWB(OLECMDID.OLECMDID_OPTICAL_ZOOM, OLECMDEXECOPT.OLECMDEXECOPT_DONTPROMPTUSER, zoomLevel, IntPtr.Zero);
         }
 
         protected override void WndProc(ref Message m)
         {
-            //Listen for the closing of the dockable panel to toggle the toolbar icon
-            switch (m.Msg)
-            {
-                case (int)WindowsMessage.WM_NOTIFY:
-                    var notify = (NMHDR)Marshal.PtrToStructure(m.LParam, typeof(NMHDR));
-                    if (notify.code == (int)DockMgrMsg.DMN_CLOSE)
-                    {
-                        toolWindowCloseAction();
-                    }
-                    break;
-            }
+            wndProcCallback(ref m);
+
             //Continue the processing, as we only toggle
             base.WndProc(ref m);
         }
@@ -395,8 +343,8 @@ namespace NppMarkdownPanel.Forms
             {
                 saveFileDialog.Filter = "html files (*.html, *.htm)|*.html;*.htm|All files (*.*)|*.*";
                 saveFileDialog.RestoreDirectory = true;
-                saveFileDialog.InitialDirectory = Path.GetDirectoryName(CurrentFilePath);
-                saveFileDialog.FileName = Path.GetFileNameWithoutExtension(CurrentFilePath);
+                saveFileDialog.InitialDirectory = Path.GetDirectoryName(currentFilePath);
+                saveFileDialog.FileName = Path.GetFileNameWithoutExtension(currentFilePath);
                 if (saveFileDialog.ShowDialog() == DialogResult.OK)
                 {
                     writeHtmlContentToFile(saveFileDialog.FileName);
@@ -413,13 +361,13 @@ namespace NppMarkdownPanel.Forms
         }
 
 
-        public bool isValidMkdnExtension(string filename)
+        public bool IsValidMkdnExtension(string filename)
         {
             var currentExtension = Path.GetExtension(filename).ToLower();
             var matchExtensionList = false;
             try
             {
-                matchExtensionList = MkdnExtensions.Split(',').Any(ext => ext != null && currentExtension.Equals("." + ext.Trim().ToLower()));
+                matchExtensionList = settings.MkdnExtensions.Split(',').Any(ext => ext != null && currentExtension.Equals("." + ext.Trim().ToLower()));
             }
             catch (Exception)
             {
@@ -428,13 +376,13 @@ namespace NppMarkdownPanel.Forms
             return matchExtensionList;
         }
 
-        public bool isValidHtmlExtension(string filename)
+        public bool IsValidHtmlExtension(string filename)
         {
             var currentExtension = Path.GetExtension(filename).ToLower();
             var matchExtensionList = false;
             try
             {
-                matchExtensionList = HtmlExtensions.Split(',').Any(ext => ext != null && currentExtension.Equals("." + ext.Trim().ToLower()));
+                matchExtensionList = settings.HtmlExtensions.Split(',').Any(ext => ext != null && currentExtension.Equals("." + ext.Trim().ToLower()));
             }
             catch (Exception)
             {
@@ -443,15 +391,15 @@ namespace NppMarkdownPanel.Forms
             return matchExtensionList;
         }
 
-        private int ValidateFilterExtension(string filename)
+        public int ValidateFilterExtension(string filename)
         {
             var currentExtension = Path.GetExtension(filename).ToLower();
-            for ( int i = 0; i < filtersFound; i++ )
+            for ( int i = 0; i < settings.filtersFound; i++ )
             {
                 var matchExtensionList = false;
                 try
                 {
-                    matchExtensionList = filterExts[i].Split(',').Any(ext => ext != null && currentExtension.Equals("." + ext.Trim().ToLower()));
+                    matchExtensionList = settings.filterExts[i].Split(',').Any(ext => ext != null && currentExtension.Equals("." + ext.Trim().ToLower()));
                 }
                 catch (Exception)
                 {
@@ -462,5 +410,9 @@ namespace NppMarkdownPanel.Forms
             return -1;
         }
 
+        public void SetMarkdownFilePath(string filepath)
+        {
+            currentFilePath = filepath;
+        }
     }
 }
