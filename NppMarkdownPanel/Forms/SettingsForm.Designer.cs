@@ -60,6 +60,7 @@
             this.tbMkdnExts = new System.Windows.Forms.TextBox();
             this.tbHtmlExts = new System.Windows.Forms.TextBox();
             this.cbShowStatusbar = new System.Windows.Forms.CheckBox();
+            this.cbSuppressScriptErrors = new System.Windows.Forms.CheckBox();
             this.panel1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.trackBar1)).BeginInit();
@@ -390,12 +391,24 @@
             this.cbShowStatusbar.UseVisualStyleBackColor = true;
             this.cbShowStatusbar.CheckedChanged += new System.EventHandler(this.cbShowStatusbar_CheckedChanged);
             // 
+            // cbSuppressScriptErrors
+            // 
+            this.cbSuppressScriptErrors.AutoSize = true;
+            this.cbSuppressScriptErrors.Location = new System.Drawing.Point(442, 384);
+            this.cbSuppressScriptErrors.Name = "cbSuppressScriptErrors";
+            this.cbSuppressScriptErrors.Size = new System.Drawing.Size(286, 17);
+            this.cbSuppressScriptErrors.TabIndex = 29;
+            this.cbSuppressScriptErrors.Text = "Suppress Script Errors";
+            this.cbSuppressScriptErrors.UseVisualStyleBackColor = true;
+            this.cbSuppressScriptErrors.CheckedChanged += new System.EventHandler(this.cbSuppressScriptErrors_CheckedChanged);
+            // 
             // SettingsForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 12F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(700, 582);
             this.Controls.Add(this.cbShowStatusbar);
+            this.Controls.Add(this.cbSuppressScriptErrors);
             this.Controls.Add(this.cbAutoShowPanel);
             this.Controls.Add(this.btnDefaultDarkmodeCss);
             this.Controls.Add(this.btnChooseDarkmodeCss);
@@ -473,5 +486,6 @@
         private System.Windows.Forms.Button btnDefaultHtmlExts;
         private System.Windows.Forms.CheckBox cbAutoShowPanel;
         private System.Windows.Forms.CheckBox cbShowStatusbar;
+        private System.Windows.Forms.CheckBox cbSuppressScriptErrors;
     }
 }

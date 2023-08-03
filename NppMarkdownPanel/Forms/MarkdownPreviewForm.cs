@@ -66,6 +66,7 @@ namespace NppMarkdownPanel.Forms
 
             tbPreview.Visible = settings.ShowToolbar;
             statusStrip2.Visible = settings.ShowStatusbar;
+            webBrowserPreview.ScriptErrorsSuppressed = settings.SuppressScriptErrors;
         }
 
         private MarkdownService markdownService;

@@ -22,6 +22,7 @@ namespace NppMarkdownPanel.Entities
         public bool IsDarkModeEnabled { get; set; }
         public bool ShowToolbar { get; set; }
         public bool ShowStatusbar { get; set; }
+        public bool SuppressScriptErrors { get; set; }
         public bool AutoShowPanel { get; set; }
 
         public const int FILTERS = 10;

@@ -68,6 +68,7 @@ namespace NppMarkdownPanel
             settings.HtmlFileName = Win32.ReadIniValue("Options", "HtmlFileName", iniFilePath);
             settings.ShowToolbar = PluginUtils.ReadIniBool("Options", "ShowToolbar", iniFilePath);
             settings.ShowStatusbar = PluginUtils.ReadIniBool("Options", "ShowStatusbar", iniFilePath);
+            settings.SuppressScriptErrors = PluginUtils.ReadIniBool("Options", "SuppressScriptErrors", iniFilePath);
             settings.MkdnExtensions = Win32.ReadIniValue("Options", "MkdnExtensions", iniFilePath, Settings.DEFAULT_SUPPORTED_MKDN_EXT);
             settings.HtmlExtensions = Win32.ReadIniValue("Options", "HtmlExtensions", iniFilePath, Settings.DEFAULT_SUPPORTED_HTML_EXT);
             settings.IsDarkModeEnabled = IsDarkModeEnabled();
@@ -257,6 +258,7 @@ namespace NppMarkdownPanel
                 settings.MkdnExtensions = settingsForm.MkdnExtensions;
                 settings.HtmlExtensions = settingsForm.HtmlExtensions;
                 settings.ShowStatusbar = settingsForm.ShowStatusbar;
+                settings.SuppressScriptErrors = settingsForm.SuppressScriptErrors;
                 settings.AutoShowPanel = settingsForm.AutoShowPanel;
 
                 settings.IsDarkModeEnabled = IsDarkModeEnabled();
@@ -332,6 +334,7 @@ namespace NppMarkdownPanel
             Win32.WriteIniValue("Options", "HtmlFileName", settings.HtmlFileName, iniFilePath);
             Win32.WriteIniValue("Options", "ShowToolbar", settings.ShowToolbar.ToString(), iniFilePath);
             Win32.WriteIniValue("Options", "ShowStatusbar", settings.ShowStatusbar.ToString(), iniFilePath);
+            Win32.WriteIniValue("Options", "SuppressScriptErrors", settings.SuppressScriptErrors.ToString(), iniFilePath);
             Win32.WriteIniValue("Options", "MkdnExtensions", settings.MkdnExtensions, iniFilePath);
             Win32.WriteIniValue("Options", "HtmlExtensions", settings.HtmlExtensions, iniFilePath);
             Win32.WriteIniValue("Options", "AutoShowPanel", settings.AutoShowPanel.ToString(), iniFilePath);
