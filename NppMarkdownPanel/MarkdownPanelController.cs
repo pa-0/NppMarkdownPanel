@@ -231,6 +231,10 @@ namespace NppMarkdownPanel
             }
 
             viewerInterface.RenderMarkdown(GetCurrentEditorText(), filepath, preserveVerticalScrollPosition);
+
+            // Set focus back to Notepad++ editor buffer
+            var scintillaGateway = scintillaGatewayFactory();
+            scintillaGateway.GrabFocus();
         }
 
         private string GetCurrentEditorText()
