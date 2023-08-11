@@ -77,6 +77,14 @@ namespace NppMarkdownPanel.Forms
             }
         }
 
+        private void cancelEsc_Click(object sender, KeyEventArgs e)
+        {
+            if (e.KeyCode == Keys.Escape)
+            {
+                this.DialogResult = DialogResult.Cancel;
+            }
+        }
+
         private void btnCancel_Click(object sender, EventArgs e)
         {
             this.DialogResult = DialogResult.Cancel;
