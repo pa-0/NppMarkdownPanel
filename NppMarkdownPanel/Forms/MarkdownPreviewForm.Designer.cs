@@ -92,6 +92,7 @@
             // webBrowserPreview
             // 
             this.webBrowserPreview.AllowWebBrowserDrop = false;
+            this.webBrowserPreview.ScriptErrorsSuppressed = true;
             this.webBrowserPreview.Dock = System.Windows.Forms.DockStyle.Fill;
             this.webBrowserPreview.Location = new System.Drawing.Point(0, 0);
             this.webBrowserPreview.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);

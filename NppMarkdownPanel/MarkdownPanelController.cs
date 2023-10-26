@@ -43,6 +43,8 @@ namespace NppMarkdownPanel
 
         private Settings settings;
 
+        private IntPtr _ptrNppTbData;
+
         public MarkdownPanelController()
         {
             scintillaGatewayFactory = PluginBase.GetGatewayFactory();
@@ -68,6 +70,7 @@ namespace NppMarkdownPanel
             settings.HtmlFileName = Win32.ReadIniValue("Options", "HtmlFileName", iniFilePath);
             settings.ShowToolbar = PluginUtils.ReadIniBool("Options", "ShowToolbar", iniFilePath);
             settings.ShowStatusbar = PluginUtils.ReadIniBool("Options", "ShowStatusbar", iniFilePath);
+            settings.SuppressScriptErrors = PluginUtils.ReadIniBool("Options", "SuppressScriptErrors", iniFilePath);
             settings.MkdnExtensions = Win32.ReadIniValue("Options", "MkdnExtensions", iniFilePath, Settings.DEFAULT_SUPPORTED_MKDN_EXT);
             settings.HtmlExtensions = Win32.ReadIniValue("Options", "HtmlExtensions", iniFilePath, Settings.DEFAULT_SUPPORTED_HTML_EXT);
             settings.IsDarkModeEnabled = IsDarkModeEnabled();
@@ -204,7 +207,34 @@ namespace NppMarkdownPanel
 
         private void RenderMarkdownDirect(bool preserveVerticalScrollPosition = true)
         {
-            viewerInterface.RenderMarkdown(GetCurrentEditorText(), notepadPPGateway.GetCurrentFilePath(), preserveVerticalScrollPosition);
+            string filepath = notepadPPGateway.GetCurrentFilePath();
+            if (_ptrNppTbData != IntPtr.Zero)
+            {
+                string caption = Main.PluginTitle;
+                caption += " - ";
+                caption += Path.GetFileName(filepath);
+                IntPtr pCaption = Marshal.ReadIntPtr(_ptrNppTbData, IntPtr.Size);
+                byte[] newCaption = new System.Text.UnicodeEncoding().GetBytes(caption);
+                int p = 0;
+                // We only have 48 characters to use (see line 379)
+                // But each character is 2 bytes (TCHAR / Unicode), so 96
+                // Copy as much and bail if still going to write the last 2 NULLs
+                for (; p < newCaption.Length; p++)
+                {
+                    if (p >= 94)
+                        break;
+                    Marshal.WriteByte((pCaption + p), newCaption[p]);
+                }
+                Marshal.WriteInt16((pCaption + p), 0);
+                Marshal.WriteInt16((pCaption + (p+1)), 0);
+                Win32.SendMessage(PluginBase.nppData._nppHandle, (uint)NppMsg.NPPM_DMMUPDATEDISPINFO, 0, viewerInterface.Handle);
+            }
+
+            viewerInterface.RenderMarkdown(GetCurrentEditorText(), filepath, preserveVerticalScrollPosition);
+
+            // Set focus back to Notepad++ editor buffer
+            var scintillaGateway = scintillaGatewayFactory();
+            scintillaGateway.GrabFocus();
         }
 
         private string GetCurrentEditorText()
@@ -257,6 +287,7 @@ namespace NppMarkdownPanel
                 settings.MkdnExtensions = settingsForm.MkdnExtensions;
                 settings.HtmlExtensions = settingsForm.HtmlExtensions;
                 settings.ShowStatusbar = settingsForm.ShowStatusbar;
+                settings.SuppressScriptErrors = settingsForm.SuppressScriptErrors;
                 settings.AutoShowPanel = settingsForm.AutoShowPanel;
 
                 settings.IsDarkModeEnabled = IsDarkModeEnabled();
@@ -332,6 +363,7 @@ namespace NppMarkdownPanel
             Win32.WriteIniValue("Options", "HtmlFileName", settings.HtmlFileName, iniFilePath);
             Win32.WriteIniValue("Options", "ShowToolbar", settings.ShowToolbar.ToString(), iniFilePath);
             Win32.WriteIniValue("Options", "ShowStatusbar", settings.ShowStatusbar.ToString(), iniFilePath);
+            Win32.WriteIniValue("Options", "SuppressScriptErrors", settings.SuppressScriptErrors.ToString(), iniFilePath);
             Win32.WriteIniValue("Options", "MkdnExtensions", settings.MkdnExtensions, iniFilePath);
             Win32.WriteIniValue("Options", "HtmlExtensions", settings.HtmlExtensions, iniFilePath);
             Win32.WriteIniValue("Options", "AutoShowPanel", settings.AutoShowPanel.ToString(), iniFilePath);
@@ -350,12 +382,15 @@ namespace NppMarkdownPanel
             {
                 NppTbData _nppTbData = new NppTbData();
                 _nppTbData.hClient = viewerInterface.Handle;
-                _nppTbData.pszName = Main.PluginTitle;
+                // Main.PluginTitle ("Markdown Panel") = 14 + 34 spaces = 48
+                string caption = Main.PluginTitle;
+                caption += "                                  ";
+                _nppTbData.pszName = caption;
                 _nppTbData.dlgID = idMyDlg;
                 _nppTbData.uMask = NppTbMsg.DWS_DF_CONT_RIGHT | NppTbMsg.DWS_ICONTAB | NppTbMsg.DWS_ICONBAR;
                 _nppTbData.hIconTab = (uint)ConvertBitmapToIcon(Properties.Resources.markdown_16x16_solid_bmp).Handle;
                 _nppTbData.pszModuleName = Main.ModuleName;
-                IntPtr _ptrNppTbData = Marshal.AllocHGlobal(Marshal.SizeOf(_nppTbData));
+                _ptrNppTbData = Marshal.AllocHGlobal(Marshal.SizeOf(_nppTbData));
                 Marshal.StructureToPtr(_nppTbData, _ptrNppTbData, false);
 
                 Win32.SendMessage(PluginBase.nppData._nppHandle, (uint)NppMsg.NPPM_DMMREGASDCKDLG, 0, _ptrNppTbData);

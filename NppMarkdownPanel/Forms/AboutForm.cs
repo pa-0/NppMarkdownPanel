@@ -32,5 +32,13 @@ namespace NppMarkdownPanel.Forms
             this.ActiveControl = btnOk;
         }
 
+        private void cancelButton_Click(object sender, KeyEventArgs e)
+        {
+            if (e.KeyCode == Keys.Escape)
+            {
+                this.Close();
+            }
+        }
+
     }
 }

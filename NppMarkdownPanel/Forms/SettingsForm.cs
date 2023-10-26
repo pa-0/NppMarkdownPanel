@@ -15,6 +15,7 @@ namespace NppMarkdownPanel.Forms
         public string HtmlExtensions { get; set; }
         public bool AutoShowPanel { get; set; }
         public bool ShowStatusbar { get; set; }
+        public bool SuppressScriptErrors { get; set; }
 
         public SettingsForm(Settings settings)
         {
@@ -27,6 +28,7 @@ namespace NppMarkdownPanel.Forms
             HtmlExtensions = settings.HtmlExtensions;
             AutoShowPanel = settings.AutoShowPanel;
             ShowStatusbar = settings.ShowStatusbar;
+            SuppressScriptErrors = settings.SuppressScriptErrors;
 
             InitializeComponent();
 
@@ -40,6 +42,7 @@ namespace NppMarkdownPanel.Forms
             tbHtmlExts.Text = HtmlExtensions;
             cbAutoShowPanel.Checked = AutoShowPanel;
             cbShowStatusbar.Checked = ShowStatusbar;
+            cbSuppressScriptErrors.Checked = SuppressScriptErrors;
         }
 
         private void trackBar1_ValueChanged(object sender, EventArgs e)
@@ -71,6 +74,14 @@ namespace NppMarkdownPanel.Forms
             if (String.IsNullOrEmpty(sblInvalidHtmlPath.Text))
             {
                 this.DialogResult = DialogResult.OK;
+            }
+        }
+
+        private void cancelEsc_Click(object sender, KeyEventArgs e)
+        {
+            if (e.KeyCode == Keys.Escape)
+            {
+                this.DialogResult = DialogResult.Cancel;
             }
         }
 
@@ -195,6 +206,11 @@ namespace NppMarkdownPanel.Forms
         private void cbShowStatusbar_CheckedChanged(object sender, EventArgs e)
         {
             ShowStatusbar = cbShowStatusbar.Checked;
+        }
+
+        private void cbSuppressScriptErrors_CheckedChanged(object sender, EventArgs e)
+        {
+            SuppressScriptErrors = cbSuppressScriptErrors.Checked;
         }
     }
 }

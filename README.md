@@ -93,6 +93,9 @@ To open the settings for this plugin: Plugins -> Markdown Panel -> Settings
 * #### Show Toolbar in Preview Window
     Checking this box will enable the toolbar in the preview window. By default, this is unchecked.
 
+* #### Suppress Script Errors
+    Suppress the annoying popups about script errors when this is really meant to be just a viewer, not a full-blown Browser.  **HINT:** To see scripts "run properly", open in a real browser.
+
 ### Preview Window Toolbar
 
 * #### Save As... (![save-btn](help/save-btn.png "Picture of the Save button on the preview panel toolbar"))
